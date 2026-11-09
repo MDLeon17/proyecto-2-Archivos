@@ -1,0 +1,4 @@
+* text=auto eol=lf
+datos/* -text !eol
+*.pdf binary !eol
+*.zip binary !eol

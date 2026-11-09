@@ -110,9 +110,7 @@ class Agenda:
         self.indice = None
         self._version = None
         if not any(ruta.exists() for ruta in (self.datos, self.ruta_indice, self.hash)):
-            self.datos.touch(exist_ok=False)
-            self._escribir_indice({})
-            escribir_texto(self.hash, hashlib.sha256(b"").hexdigest() + "\n")
+            self._inicializar_vacio()
 
         try:
             self.indice = self._leer_indice()
@@ -137,6 +135,16 @@ class Agenda:
             mensaje = None
         self._version = self._version_archivos()
         return mensaje
+
+    def _inicializar_vacio(self):
+        self.datos.touch(exist_ok=False)
+        try:
+            self._escribir_indice({})
+            escribir_texto(self.hash, hashlib.sha256(b"").hexdigest() + "\n")
+        except OSError:
+            self.ruta_indice.unlink(missing_ok=True)
+            self.datos.unlink(missing_ok=True)
+            raise
 
     def _leer_indice(self):
         try:
@@ -194,16 +202,17 @@ class Agenda:
         archivo.seek(desplazamiento)
         posicion = archivo.tell()
         datos = archivo.read(TAM_REGISTRO)
-        if leer_registro(datos, posicion)["id"] != identificador:
+        contacto = leer_registro(datos, posicion)
+        if contacto["id"] != identificador:
             raise ErrorAgenda("El registro indicado no coincide con el índice.")
-        return datos, posicion
+        return datos, contacto, posicion
 
     def buscar(self, valor_id):
         identificador = normalizar_id(valor_id)
         desplazamiento = self._posicion(identificador)
         with self.datos.open("rb") as archivo:
-            datos, posicion = self._leer_en(archivo, identificador, desplazamiento)
-        return leer_registro(datos, posicion), posicion
+            _, contacto, posicion = self._leer_en(archivo, identificador, desplazamiento)
+        return contacto, posicion
 
     def agregar(self, contacto):
         self._comprobar_escritura()
@@ -225,7 +234,7 @@ class Agenda:
             raise ErrorAgenda("El ID de un contacto existente se conserva al editarlo.")
         datos = codificar_contacto(contacto)
         with self.datos.open("r+b") as archivo:
-            anterior, posicion = self._leer_en(archivo, identificador, self._posicion(identificador))
+            anterior, _, posicion = self._leer_en(archivo, identificador, self._posicion(identificador))
             self._guardar(archivo, posicion, datos, anterior)
         return posicion
 
