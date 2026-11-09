@@ -46,14 +46,16 @@ def _contraste(color):
 
 def _imagen_boton(raiz, radio, fondo, borde):
     escala = 4
-    lado = 2 * radio + 3
-    lado_grande = lado * escala
-    imagen = Image.new("RGBA", (lado_grande, lado_grande))
+    # Tk repite el centro al redibujar. Un centro amplio evita dibujar cada píxel por separado.
+    ancho = 2 * (radio + 1) + 128
+    alto = 2 * (radio + 1) + 32
+    ancho_grande, alto_grande = ancho * escala, alto * escala
+    imagen = Image.new("RGBA", (ancho_grande, alto_grande))
     ImageDraw.Draw(imagen).rounded_rectangle(
-        (0, 0, lado_grande - 1, lado_grande - 1),
+        (0, 0, ancho_grande - 1, alto_grande - 1),
         radius=radio * escala, fill=fondo, outline=borde, width=escala,
     )
-    imagen = imagen.resize((lado, lado), Image.Resampling.LANCZOS)
+    imagen = imagen.resize((ancho, alto), Image.Resampling.LANCZOS)
     return ImageTk.PhotoImage(imagen, master=raiz)
 
 
@@ -64,7 +66,8 @@ def _estilo_boton(estilo, raiz, nombre, radio, base, estados):
         for estado, fondo, borde in estados
     ]
     elemento = f"Agenda.{nombre}.borde"
-    estilo.element_create(elemento, "image", normal, *variantes,
+    minimo = 2 * radio + 3
+    estilo.element_create(elemento, "image", normal, *variantes, width=minimo, height=minimo,
                           border=radio + 1, padding=2, sticky="nsew")
     _, diseno = estilo.layout(nombre)[0]
     diseno.pop("border", None)
