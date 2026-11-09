@@ -8,6 +8,7 @@ from tkinter import filedialog, messagebox, ttk
 
 from agenda import Agenda, CAMPOS, ErrorAgenda, TAM_REGISTRO, sesion_exclusiva
 from reporte import generar_pdf
+from tema import configurar_tema
 
 PROYECTO = Path(__file__).resolve().parent
 ETIQUETAS = {"id": "ID", "nombre": "Nombre", "telefono": "Teléfono",
@@ -25,50 +26,18 @@ class VentanaAgenda:
         self.pestana = tk.StringVar(value="Contactos")
 
         raiz.title("Agenda de contactos | Laboratorio 2")
-        raiz.configure(bg="#F0F3F8")
-        self._estilos()
+        configurar_tema(raiz)
         raiz.attributes("-fullscreen", True)
         self._crear_interfaz()
         self.entrada_id.focus_set()
         self._ejecutar(self._iniciar)
 
-    def _estilos(self):
-        estilo = ttk.Style()
-        estilo.theme_use("clam")
-        estilo.configure("TFrame", background="#F0F3F8")
-        estilo.configure("Card.TFrame", background="#FFFFFF")
-        estilo.configure("Sidebar.TFrame", background="#172849")
-        estilo.configure("Page.TLabel", background="#F0F3F8", foreground="#172849",
-                         font=("Segoe UI", 24, "bold"))
-        estilo.configure("Nav.Toolbutton", background="#172849", foreground="#E2EBFC",
-                         anchor="w", padding=(12, 10), borderwidth=0,
-                         font=("Segoe UI", 11))
-        estilo.map("Nav.Toolbutton",
-                   background=[("selected", "#315C9E"), ("active", "#243E6C")],
-                   foreground=[("selected", "#FFFFFF"), ("active", "#FFFFFF")])
-        estilo.configure("Card.TLabel", background="#FFFFFF", foreground="#172849",
-                         font=("Segoe UI", 10))
-        estilo.configure("Heading.TLabel", background="#FFFFFF", foreground="#172849",
-                         font=("Segoe UI", 15, "bold"))
-        estilo.configure("Hint.TLabel", background="#FFFFFF", foreground="#4D5E78",
-                         font=("Segoe UI", 9))
-        estilo.configure("TEntry", padding=5, fieldbackground="#FFFFFF")
-        estilo.configure("TButton", padding=(11, 6), font=("Segoe UI", 10))
-        estilo.configure("Primary.TButton", background="#254D91", foreground="white")
-        estilo.map("Primary.TButton",
-                   background=[("pressed", "#173869"), ("active", "#3262A8")])
-        for nombre, fondo, tinta in (("Normal", "#DDE9F8", "#193E73"),
-                                     ("Aviso", "#FFF0CB", "#713C0D")):
-            estilo.configure(f"{nombre}.TLabel", background=fondo, foreground=tinta,
-                             padding=(12, 9), font=("Segoe UI", 10))
-
     def _crear_interfaz(self):
         lateral = ttk.Frame(self.raiz, style="Sidebar.TFrame", padding=(18, 24))
         lateral.pack(side="left", fill="y")
-        tk.Label(lateral, text="Agenda de contactos", bg="#172849", fg="#FFFFFF",
-                 font=("Segoe UI", 13, "bold")).pack(anchor="w")
-        tk.Label(lateral, text="LABORATORIO 2", bg="#172849", fg="#B6D2FD",
-                 font=("Segoe UI", 9, "bold")).pack(anchor="w", pady=(2, 24))
+        ttk.Label(lateral, text="Agenda de contactos", style="Sidebar.TLabel").pack(anchor="w")
+        ttk.Label(lateral, text="LABORATORIO 2", style="SidebarCaption.TLabel").pack(
+            anchor="w", pady=(2, 24))
 
         area = ttk.Frame(self.raiz, padding=(26, 22))
         area.pack(side="left", fill="both", expand=True)
@@ -84,7 +53,6 @@ class VentanaAgenda:
             ("Contactos", self._crear_formulario),
             ("Exportar", self._crear_exportacion),
             ("Herramientas", self._crear_herramientas),
-            ("Ayuda", self._crear_ayuda),
         )
         self.paginas = {}
         for nombre, crear in secciones:
@@ -95,7 +63,8 @@ class VentanaAgenda:
             crear(pagina)
             self.paginas[nombre] = pagina
 
-        ttk.Button(lateral, text="Cerrar aplicación", command=self.raiz.destroy).pack(
+        ttk.Button(lateral, text="Cerrar aplicación", style="Sidebar.TButton",
+                   command=self.raiz.destroy).pack(
             side="bottom", fill="x", pady=(18, 0))
         self._mostrar_pestana()
 
@@ -157,15 +126,6 @@ class VentanaAgenda:
                 row=fila, column=0, sticky="ew", padx=(0, 14), pady=4)
             ttk.Label(pagina, text=detalle, style="Hint.TLabel", wraplength=285,
                       justify="left").grid(row=fila, column=1, sticky="w", pady=4)
-
-    def _crear_ayuda(self, pagina):
-        ttk.Label(pagina, text="Acerca de la agenda", style="Heading.TLabel").pack(anchor="w")
-        ttk.Label(pagina, text="Laboratorio 2 · Manejo de archivos",
-                  style="Hint.TLabel").pack(anchor="w", pady=(3, 12))
-        ttk.Label(pagina, text="Usa Contactos para agregar, buscar o editar por ID. "
-                  "La barra inferior muestra el resultado de la operación y la posición del "
-                  "registro cuando corresponde.",
-                  style="Card.TLabel", wraplength=450, justify="left").pack(anchor="w")
 
     def _iniciar(self):
         aviso = self.agenda.preparar()
