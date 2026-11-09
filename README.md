@@ -13,6 +13,8 @@ py main.py
 
 ## Usar la agenda
 
+La agenda abre en pantalla completa. Usa la barra lateral para cambiar entre **Contactos**, **Exportar**, **Herramientas** y **Ayuda**. Pulsa **Cerrar aplicación** para salir.
+
 - **Agregar**. Completa ID, nombre, teléfono, correo y ciudad. El ID debe ser un entero único.
 - **Buscar y editar**. Escribe el ID y pulsa **Buscar por ID**. Cambia los datos y pulsa **Guardar cambios**. El ID se conserva. La barra inferior muestra el número de registro y la posición obtenida con `tell()`.
 - **Exportar**. Elige JSON o reporte PDF. El PDF se genera a partir de un JSON de los contactos actuales.

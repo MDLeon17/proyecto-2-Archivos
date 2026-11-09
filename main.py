@@ -22,17 +22,13 @@ class VentanaAgenda:
         self.id_cargado = None
         self.campos = {campo: tk.StringVar() for campo, _ in CAMPOS}
         self.estado = tk.StringVar(value="Lista para agregar un contacto o buscar por ID.")
+        self.pestana = tk.StringVar(value="Contactos")
 
         raiz.title("Agenda de contactos | Laboratorio 2")
         raiz.configure(bg="#F0F3F8")
         self._estilos()
-        self._crear_menu()
-        self._crear_formulario()
-        raiz.update_idletasks()
-        ancho = max(690, raiz.winfo_reqwidth())
-        alto = max(530, raiz.winfo_reqheight())
-        raiz.minsize(ancho, alto)
-        raiz.geometry(f"{ancho}x{alto}")
+        raiz.attributes("-fullscreen", True)
+        self._crear_interfaz()
         self.entrada_id.focus_set()
         self._ejecutar(self._iniciar)
 
@@ -41,6 +37,15 @@ class VentanaAgenda:
         estilo.theme_use("clam")
         estilo.configure("TFrame", background="#F0F3F8")
         estilo.configure("Card.TFrame", background="#FFFFFF")
+        estilo.configure("Sidebar.TFrame", background="#172849")
+        estilo.configure("Page.TLabel", background="#F0F3F8", foreground="#172849",
+                         font=("Segoe UI", 24, "bold"))
+        estilo.configure("Nav.Toolbutton", background="#172849", foreground="#E2EBFC",
+                         anchor="w", padding=(12, 10), borderwidth=0,
+                         font=("Segoe UI", 11))
+        estilo.map("Nav.Toolbutton",
+                   background=[("selected", "#315C9E"), ("active", "#243E6C")],
+                   foreground=[("selected", "#FFFFFF"), ("active", "#FFFFFF")])
         estilo.configure("Card.TLabel", background="#FFFFFF", foreground="#172849",
                          font=("Segoe UI", 10))
         estilo.configure("Heading.TLabel", background="#FFFFFF", foreground="#172849",
@@ -57,37 +62,49 @@ class VentanaAgenda:
             estilo.configure(f"{nombre}.TLabel", background=fondo, foreground=tinta,
                              padding=(12, 9), font=("Segoe UI", 10))
 
-    def _crear_menu(self):
-        barra = tk.Menu(self.raiz)
-        menus = (
-            ("Contactos", (("Agregar contacto", self.agregar), ("Buscar por ID", self.buscar),
-                           ("Guardar cambios", self.modificar), ("Limpiar formulario", self.limpiar))),
-            ("Exportar", (("Exportar a JSON…", self.exportar_json),
-                          ("Generar reporte PDF…", self.exportar_pdf))),
-            ("Herramientas", (("Verificar integridad", self.verificar_integridad),
-                              ("Crear respaldo ZIP…", self.crear_respaldo),
-                              ("Información del archivo", self.informacion))),
-            ("Ayuda", (("Acerca de la agenda", self.ayuda),)),
+    def _crear_interfaz(self):
+        lateral = ttk.Frame(self.raiz, style="Sidebar.TFrame", padding=(18, 24))
+        lateral.pack(side="left", fill="y")
+        tk.Label(lateral, text="Agenda de contactos", bg="#172849", fg="#FFFFFF",
+                 font=("Segoe UI", 13, "bold")).pack(anchor="w")
+        tk.Label(lateral, text="LABORATORIO 2", bg="#172849", fg="#B6D2FD",
+                 font=("Segoe UI", 9, "bold")).pack(anchor="w", pady=(2, 24))
+
+        area = ttk.Frame(self.raiz, padding=(26, 22))
+        area.pack(side="left", fill="both", expand=True)
+        ttk.Label(area, textvariable=self.pestana, style="Page.TLabel").pack(
+            anchor="w", pady=(0, 14))
+        self.etiqueta_estado = ttk.Label(area, textvariable=self.estado, style="Normal.TLabel",
+                                         wraplength=610, justify="left")
+        self.etiqueta_estado.pack(side="bottom", fill="x", pady=(12, 0))
+
+        contenedor = ttk.Frame(area)
+        contenedor.pack(fill="both", expand=True)
+        secciones = (
+            ("Contactos", self._crear_formulario),
+            ("Exportar", self._crear_exportacion),
+            ("Herramientas", self._crear_herramientas),
+            ("Ayuda", self._crear_ayuda),
         )
-        for titulo, opciones in menus:
-            menu = tk.Menu(barra, tearoff=False)
-            for texto, operacion in opciones:
-                menu.add_command(label=texto, command=partial(self._ejecutar, operacion))
-            barra.add_cascade(label=titulo, menu=menu)
-        self.raiz.config(menu=barra)
+        self.paginas = {}
+        for nombre, crear in secciones:
+            ttk.Radiobutton(lateral, text=nombre, value=nombre, variable=self.pestana,
+                            style="Nav.Toolbutton", command=self._mostrar_pestana).pack(
+                fill="x", pady=2)
+            pagina = ttk.Frame(contenedor, style="Card.TFrame", padding=(22, 18))
+            crear(pagina)
+            self.paginas[nombre] = pagina
 
-    def _crear_formulario(self):
-        encabezado = tk.Frame(self.raiz, bg="#172849", padx=23, pady=16)
-        encabezado.pack(fill="x")
-        tk.Label(encabezado, text="LABORATORIO 2  /  MANEJO DE ARCHIVOS",
-                 bg="#172849", fg="#B6D2FD", font=("Segoe UI", 9, "bold")).pack(anchor="w")
-        tk.Label(encabezado, text="Agenda de contactos", bg="#172849", fg="#FFFFFF",
-                 font=("Segoe UI", 23, "bold")).pack(anchor="w")
+        ttk.Button(lateral, text="Cerrar aplicación", command=self.raiz.destroy).pack(
+            side="bottom", fill="x", pady=(18, 0))
+        self._mostrar_pestana()
 
-        area = ttk.Frame(self.raiz, padding=(21, 15, 21, 15))
-        area.pack(fill="both", expand=True)
-        tarjeta = ttk.Frame(area, style="Card.TFrame", padding=(18, 14))
-        tarjeta.pack(fill="both", expand=True)
+    def _mostrar_pestana(self):
+        for pagina in self.paginas.values():
+            pagina.pack_forget()
+        self.paginas[self.pestana.get()].pack(anchor="nw")
+
+    def _crear_formulario(self, tarjeta):
         tarjeta.columnconfigure(1, weight=1)
         ttk.Label(tarjeta, text="Ficha de contacto", style="Heading.TLabel").grid(
             row=0, column=0, columnspan=3, sticky="w")
@@ -97,7 +114,7 @@ class VentanaAgenda:
         for fila, (campo, _) in enumerate(CAMPOS, start=2):
             ttk.Label(tarjeta, text=ETIQUETAS[campo], style="Card.TLabel").grid(
                 row=fila, column=0, sticky="w", padx=(0, 16), pady=4)
-            entrada = ttk.Entry(tarjeta, textvariable=self.campos[campo])
+            entrada = ttk.Entry(tarjeta, textvariable=self.campos[campo], width=39)
             entrada.grid(row=fila, column=1, columnspan=1 if campo == "id" else 2,
                          sticky="ew", pady=4)
             if campo == "id":
@@ -115,9 +132,40 @@ class VentanaAgenda:
         self.boton_guardar.pack(side="left", padx=9)
         ttk.Button(acciones, text="Limpiar", command=self.limpiar).pack(side="left")
 
-        self.etiqueta_estado = ttk.Label(area, textvariable=self.estado, style="Normal.TLabel",
-                                         wraplength=610, justify="left")
-        self.etiqueta_estado.pack(fill="x", pady=(12, 0))
+    def _crear_exportacion(self, pagina):
+        self._crear_opciones(pagina, "Exportar contactos", (
+            ("Exportar a JSON…", "Guarda todos los contactos en un archivo JSON.", self.exportar_json),
+            ("Generar reporte PDF…", "Crea un reporte con los contactos y la fecha de generación.",
+             self.exportar_pdf),
+        ))
+
+    def _crear_herramientas(self, pagina):
+        self._crear_opciones(pagina, "Archivos de la agenda", (
+            ("Verificar integridad", "Compara el SHA-256 actual con el guardado.",
+             self.verificar_integridad),
+            ("Crear respaldo ZIP…", "Comprime los datos, el índice y el hash.",
+             self.crear_respaldo),
+            ("Información del archivo", "Consulta tamaño, fecha de modificación y permisos.",
+             self.informacion),
+        ))
+
+    def _crear_opciones(self, pagina, titulo, opciones):
+        ttk.Label(pagina, text=titulo, style="Heading.TLabel").grid(
+            row=0, column=0, columnspan=2, sticky="w", pady=(0, 9))
+        for fila, (nombre, detalle, operacion) in enumerate(opciones, start=1):
+            ttk.Button(pagina, text=nombre, command=partial(self._ejecutar, operacion)).grid(
+                row=fila, column=0, sticky="ew", padx=(0, 14), pady=4)
+            ttk.Label(pagina, text=detalle, style="Hint.TLabel", wraplength=285,
+                      justify="left").grid(row=fila, column=1, sticky="w", pady=4)
+
+    def _crear_ayuda(self, pagina):
+        ttk.Label(pagina, text="Acerca de la agenda", style="Heading.TLabel").pack(anchor="w")
+        ttk.Label(pagina, text="Laboratorio 2 · Manejo de archivos",
+                  style="Hint.TLabel").pack(anchor="w", pady=(3, 12))
+        ttk.Label(pagina, text="Usa Contactos para agregar, buscar o editar por ID. "
+                  "La barra inferior muestra el resultado de la operación y la posición del "
+                  "registro cuando corresponde.",
+                  style="Card.TLabel", wraplength=450, justify="left").pack(anchor="w")
 
     def _iniciar(self):
         aviso = self.agenda.preparar()
@@ -230,10 +278,6 @@ class VentanaAgenda:
             f"Tamaño del registro: {TAM_REGISTRO} bytes",
             parent=self.raiz,
         )
-
-    def ayuda(self):
-        messagebox.showinfo("Acerca de la agenda", "Agenda de contactos con acceso aleatorio.\n"
-                            "Laboratorio 2 · Manejo de archivos", parent=self.raiz)
 
 
 def main():
