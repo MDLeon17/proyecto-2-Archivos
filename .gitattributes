@@ -2,3 +2,4 @@
 datos/* -text !eol
 *.pdf binary !eol
 *.zip binary !eol
+datos/contactos.dat binary !eol

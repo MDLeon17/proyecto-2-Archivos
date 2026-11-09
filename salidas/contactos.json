@@ -1,0 +1,58 @@
+[
+  {
+    "id": 101,
+    "nombre": "Ana López",
+    "telefono": "0000-0001",
+    "correo": "contacto1@example.com",
+    "ciudad": "Quetzaltenango"
+  },
+  {
+    "id": 102,
+    "nombre": "Diego Pérez",
+    "telefono": "0000-0002",
+    "correo": "contacto2@example.com",
+    "ciudad": "Salcajá"
+  },
+  {
+    "id": 103,
+    "nombre": "Sofía Gómez",
+    "telefono": "0000-0003",
+    "correo": "contacto3@example.com",
+    "ciudad": "Totonicapán"
+  },
+  {
+    "id": 104,
+    "nombre": "Mateo Díaz",
+    "telefono": "0000-0004",
+    "correo": "contacto4@example.com",
+    "ciudad": "San Marcos"
+  },
+  {
+    "id": 105,
+    "nombre": "Valeria Ríos",
+    "telefono": "0000-0005",
+    "correo": "contacto5@example.com",
+    "ciudad": "Retalhuleu"
+  },
+  {
+    "id": 106,
+    "nombre": "Gabriel Ruiz",
+    "telefono": "0000-0006",
+    "correo": "contacto6@example.com",
+    "ciudad": "Guatemala"
+  },
+  {
+    "id": 107,
+    "nombre": "Lucía Méndez",
+    "telefono": "0000-0007",
+    "correo": "contacto7@example.com",
+    "ciudad": "Quetzaltenango"
+  },
+  {
+    "id": 108,
+    "nombre": "Emilio Chávez",
+    "telefono": "0000-0008",
+    "correo": "contacto8@example.com",
+    "ciudad": "Sololá"
+  }
+]
